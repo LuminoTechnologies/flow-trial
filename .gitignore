@@ -1,0 +1,22 @@
+# Environment and credentials - NEVER commit these
+.env
+*.env
+.env.*
+!.env.example
+
+# Common credential file patterns
+*_token*
+*credentials*
+*secret*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db

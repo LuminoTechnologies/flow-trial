@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.flowengineering.com)",
+      "Bash(python scripts/flow_api.py req list)",
+      "Bash(python scripts/flow_api.py req get 4)",
+      "Bash(python scripts/flow_api.py --help)",
+      "Bash(python scripts/flow_api.py req --help)",
+      "Bash(python scripts/flow_api.py req update 4 '{\"\"statement_raw\"\": \"\"The car shall have a powertrain capable of outputting at least 400bhp\"\"}')",
+      "WebFetch(domain:flow-engineering-knowledge-base.help.usepylon.com)"
+    ]
+  }
+}
