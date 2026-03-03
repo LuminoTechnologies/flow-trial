@@ -1,0 +1,82 @@
+# Flow requirements quality rules
+# Rules are checked in order. Add custom rules in the 'custom' section.
+#
+# check types:
+#   regex_must_match      - field must match the pattern
+#   regex_must_not_match  - field must NOT match the pattern
+#   keyword_forbidden     - field must not contain any of the listed keywords
+#   field_must_be_set     - field must be non-empty
+
+rules:
+  - id: INC001
+    name: "Statement must contain 'shall'"
+    severity: error
+    check: regex_must_match
+    pattern: "\\bshall\\b"
+    field: description
+    fix_hint: "Rewrite the statement using 'shall' to express a mandatory requirement."
+
+  - id: INC002
+    name: "Avoid 'should', 'will', 'must' in statement"
+    severity: warning
+    check: regex_must_not_match
+    pattern: "\\b(should|will|must)\\b"
+    field: description
+    fix_hint: "Replace with 'shall'. 'Should' implies optional; 'will' and 'must' are ambiguous in requirements."
+
+  - id: INC003
+    name: "No ambiguous terms"
+    severity: warning
+    check: keyword_forbidden
+    keywords:
+      - appropriate
+      - adequate
+      - as necessary
+      - as required
+      - sufficient
+      - satisfactory
+      - flexible
+      - easy
+      - user-friendly
+    field: description
+    fix_hint: "Replace ambiguous terms with specific, measurable criteria."
+
+  - id: INC004
+    name: "Avoid compound requirements"
+    severity: error
+    check: regex_must_not_match
+    pattern: "\\bshall\\b.*\\b(and|or)\\b.*\\bshall\\b"
+    field: description
+    fix_hint: "Split into separate requirements, one per 'shall' statement."
+
+  - id: INC005
+    name: "Owner field must be set"
+    severity: warning
+    check: field_must_be_set
+    field: owner
+    fix_hint: "Assign an owner responsible for this requirement."
+
+  - id: INC006
+    name: "Verification method must be set"
+    severity: warning
+    check: field_must_be_set
+    field: verificationMethod
+    fix_hint: "Assign a verification method: Test, Analysis, Inspection, or Demonstration."
+
+  - id: INC007
+    name: "Requirement must be allocated to a system"
+    severity: warning
+    check: field_must_be_set
+    field: systemId
+    fix_hint: "Allocate this requirement to a system via the traceability panel."
+
+  - id: INC008
+    name: "Statement should reference a measurable quantity or condition"
+    severity: info
+    check: regex_must_match
+    pattern: "\\d+|within|less than|greater than|minimum|maximum|at least|at most|between"
+    field: description
+    fix_hint: "Add specific, measurable criteria (numbers, limits, boundary conditions)."
+
+# Add project-specific rules below:
+custom: []

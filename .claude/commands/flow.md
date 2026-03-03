@@ -14,70 +14,123 @@ If a user asks for something that does not appear in the capabilities document:
 
 ## How to call the API
 
-Use the Python helper script via Bash:
+Use the CLI via Bash:
 
 ```bash
-python scripts/flow_api.py <command> [options]
+python scripts/flow_cli.py <command> [subcommand] [options]
 ```
 
-The script automatically loads `.env` from the repo root, so no manual setup is needed. It handles token exchange automatically and all output is JSON.
+The script automatically loads `.env` from the repo root, so no manual setup is needed.
 
-If the script prints `ERROR: FLOW_REFRESH_TOKEN environment variable is not set`, tell the user to create a `.env` file by copying `.env.example` and filling in their credentials - no need to source it.
+If the script prints `ERROR: FLOW_REFRESH_TOKEN environment variable is not set`, tell the user to create a `.env` file by copying `.env.example` and filling in their credentials.
 
 ## Available commands
 
 ### Test authentication
 
 ```bash
-python scripts/flow_api.py auth
+python scripts/flow_cli.py auth
 ```
 
-### List requirements in the default project
+### Requirement CRUD
 
 ```bash
-python scripts/flow_api.py req list
-python scripts/flow_api.py req list --limit 100
-python scripts/flow_api.py req list --after <cursor>   # next page
-python scripts/flow_api.py req list --project other-project
+python scripts/flow_cli.py req list
+python scripts/flow_cli.py req list --all           # fetch all pages automatically
+python scripts/flow_cli.py req list --limit 100
+python scripts/flow_cli.py req get <id>
+python scripts/flow_cli.py req create '{"name": "REQ-001", "description": "The system shall..."}'
+python scripts/flow_cli.py req update <id> '{"name": "Updated name"}'
 ```
 
-### Get full detail of a requirement
+### Traceability links
 
 ```bash
-python scripts/flow_api.py req get <id>
+python scripts/flow_cli.py link req-req <source-id> parent <target-id>
+python scripts/flow_cli.py link req-req <source-id> child <target-id>
+python scripts/flow_cli.py link req-req <source-id> cross <target-id> --target-project other-project
+python scripts/flow_cli.py link req-tc <requirement-id> <test-case-id>
 ```
 
-### Create a requirement
+### Backup and restore
 
 ```bash
-python scripts/flow_api.py req create '{"name": "REQ-001", "description": "The system shall..."}'
+python scripts/flow_cli.py backup list
+python scripts/flow_cli.py restore <backup-id>
 ```
 
-Multiple at once: pass a JSON array.
+Every write command automatically creates a backup before modifying data.
 
-### Update a requirement
+### Import from Excel
 
 ```bash
-python scripts/flow_api.py req update <id> '{"name": "Updated name"}'
+python scripts/flow_cli.py import flow-test.xlsx --preview    # parse only, no API calls
+python scripts/flow_cli.py import flow-test.xlsx --dry-run    # preview + quality check
+python scripts/flow_cli.py import flow-test.xlsx              # full import with backup
 ```
 
-Only include fields you want to change.
+See [docs/user-guide/02-importing-requirements.md](../../docs/user-guide/02-importing-requirements.md).
 
-### Link requirement to requirement
+### Quality review (INCOSE rules)
 
 ```bash
-python scripts/flow_api.py link req-req <source-id> parent <target-id>
-python scripts/flow_api.py link req-req <source-id> child <target-id>
-python scripts/flow_api.py link req-req <source-id> cross <target-id> --target-project other-project
+python scripts/flow_cli.py quality                # review all requirements
+python scripts/flow_cli.py quality --id 42        # review single requirement
+python scripts/flow_cli.py quality --fix-hints    # show suggested corrections
 ```
 
-Link types: `parent`, `child`, `cross`
+See [docs/user-guide/03-quality-review.md](../../docs/user-guide/03-quality-review.md).
 
-### Link requirement to test case
+### Test case generation
 
 ```bash
-python scripts/flow_api.py link req-tc <requirement-id> <test-case-id>
+python scripts/flow_cli.py testgen                # generate drafts for all 'shall' requirements
+python scripts/flow_cli.py testgen --id 42        # generate for a single requirement
+python scripts/flow_cli.py testgen --commit       # create approved drafts in Flow + link to reqs
 ```
+
+See [docs/user-guide/04-test-cases.md](../../docs/user-guide/04-test-cases.md).
+
+### Traceability analysis
+
+```bash
+python scripts/flow_cli.py trace systems
+python scripts/flow_cli.py trace gaps
+python scripts/flow_cli.py trace matrix [--format csv]
+python scripts/flow_cli.py trace allocate <req-id> <sys-id>
+python scripts/flow_cli.py trace suggest
+```
+
+See [docs/user-guide/05-traceability.md](../../docs/user-guide/05-traceability.md).
+
+### Change impact analysis
+
+```bash
+python scripts/flow_cli.py impact req <id>
+python scripts/flow_cli.py impact system <id>
+python scripts/flow_cli.py impact diff <backup-id>
+```
+
+See [docs/user-guide/06-change-impact.md](../../docs/user-guide/06-change-impact.md).
+
+### ICD generation
+
+```bash
+python scripts/flow_cli.py icd list
+python scripts/flow_cli.py icd generate [--pair "SystemA-SystemB"]
+```
+
+Tag requirements with custom field `interface_pair: "SystemA-SystemB"` to define ICD scope.
+See [docs/user-guide/07-icd-generation.md](../../docs/user-guide/07-icd-generation.md).
+
+### Design values model awareness
+
+```bash
+python scripts/flow_cli.py models list
+python scripts/flow_cli.py models sync --csv model_output.csv
+```
+
+See [docs/user-guide/08-design-values.md](../../docs/user-guide/08-design-values.md).
 
 ## Presenting results
 

@@ -1,0 +1,44 @@
+# import_config.yaml - column mapping for Excel spreadsheet import
+#
+# Copy this file to config/import_config.yaml and edit to match your spreadsheet.
+# import_config.yaml is gitignored (may contain project-specific column names).
+# This .example file is committed as a template.
+
+# Map Flow fields to spreadsheet column header names (case-insensitive).
+# List multiple alternatives - the first match found is used.
+column_map:
+  name:
+    - "Req ID"
+    - "ID"
+    - "Name"
+    - "Requirement ID"
+  description:
+    - "Statement"
+    - "Description"
+    - "Requirement"
+    - "Text"
+  owner:
+    - "Owner"
+    - "Responsible"
+    - "Assignee"
+  type:
+    - "Type"
+    - "Req Type"
+    - "Requirement Type"
+  rationale:
+    - "Rationale"
+    - "Justification"
+  notes:
+    - "Notes"
+    - "Comments"
+
+# Map sheet names to system IDs (optional).
+# If a sheet name matches a key here, requirements from that sheet are allocated
+# to the corresponding system ID.
+# Leave empty to skip system allocation during import.
+sheet_to_system:
+  # "Sheet1": 123
+  # "Avionics": 456
+
+# Skip rows where all mapped cells are empty
+skip_empty_rows: true

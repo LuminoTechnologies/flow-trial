@@ -224,5 +224,5 @@ Reference for the `/flow` Claude Code skill. All paths are relative to:
 ## Notes
 
 - Prefer `paged` variants over non-paged list endpoints (non-paged are deprecated).
-- The `scripts/flow_api.py` helper currently implements a subset: auth, req list/get/create/update, req-to-req links, req-to-testcase links. Other operations can be called directly via the `api_request()` helper or added as new subcommands.
+- The `scripts/flow_cli.py` CLI implements: auth, req CRUD, links, backup/restore, import, quality review, test generation, traceability analysis, impact analysis, ICD generation, and design values sync. Other operations can be called directly via `api_request()` in `scripts/flow/client.py` or added as new subcommands.
 - All write operations that accept arrays can batch multiple items in a single call.

@@ -17,6 +17,13 @@ __pycache__/
 venv/
 env/
 
+# Flow outputs and backups (may contain project data - never commit)
+backups/
+outputs/
+
+# User-specific import config (contains column names - gitignore the live copy)
+config/import_config.yaml
+
 # OS
 .DS_Store
 Thumbs.db
