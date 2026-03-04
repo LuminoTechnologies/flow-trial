@@ -117,9 +117,9 @@ def api_request_all_pages(path_template, limit=100):
         result = api_request("GET", path)
         if not result:
             break
-        page_items = result.get("items", result.get("requirements", []))
+        page_items = result.get("results", result.get("items", result.get("requirements", [])))
         items.extend(page_items)
-        cursor = result.get("nextCursor") or result.get("after")
+        cursor = result.get("nextCursor") or result.get("after") or (result.get("cursor") if result.get("hasMore") else None)
         if not cursor or not page_items:
             break
         after = cursor
