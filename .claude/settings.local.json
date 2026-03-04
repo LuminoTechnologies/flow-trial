@@ -7,7 +7,8 @@
       "Bash(python3:*)",
       "Bash(python -c:*)",
       "Bash(curl:*)",
-      "Bash(python scripts/flow_cli.py --help)"
+      "Bash(python scripts/flow_cli.py --help)",
+      "Bash(python outputs/_tc_update.py)"
     ]
   }
 }

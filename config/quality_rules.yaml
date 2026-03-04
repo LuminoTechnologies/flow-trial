@@ -13,7 +13,7 @@ rules:
     severity: error
     check: regex_must_match
     pattern: "\\bshall\\b"
-    field: description
+    field: statement_raw
     fix_hint: "Rewrite the statement using 'shall' to express a mandatory requirement."
 
   - id: INC002
@@ -21,7 +21,7 @@ rules:
     severity: warning
     check: regex_must_not_match
     pattern: "\\b(should|will|must)\\b"
-    field: description
+    field: statement_raw
     fix_hint: "Replace with 'shall'. 'Should' implies optional; 'will' and 'must' are ambiguous in requirements."
 
   - id: INC003
@@ -38,7 +38,7 @@ rules:
       - flexible
       - easy
       - user-friendly
-    field: description
+    field: statement_raw
     fix_hint: "Replace ambiguous terms with specific, measurable criteria."
 
   - id: INC004
@@ -46,7 +46,7 @@ rules:
     severity: error
     check: regex_must_not_match
     pattern: "\\bshall\\b.*\\b(and|or)\\b.*\\bshall\\b"
-    field: description
+    field: statement_raw
     fix_hint: "Split into separate requirements, one per 'shall' statement."
 
   - id: INC005
@@ -67,7 +67,7 @@ rules:
     name: "Requirement must be allocated to a system"
     severity: warning
     check: field_must_be_set
-    field: systemId
+    field: systemIds
     fix_hint: "Allocate this requirement to a system via the traceability panel."
 
   - id: INC008
@@ -75,7 +75,7 @@ rules:
     severity: info
     check: regex_must_match
     pattern: "\\d+|within|less than|greater than|minimum|maximum|at least|at most|between"
-    field: description
+    field: statement_raw
     fix_hint: "Add specific, measurable criteria (numbers, limits, boundary conditions)."
 
 # Add project-specific rules below:

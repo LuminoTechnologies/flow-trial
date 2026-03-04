@@ -39,7 +39,7 @@ def _builtin_rules():
             "severity": "error",
             "check": "regex_must_match",
             "pattern": r"\bshall\b",
-            "field": "description",
+            "field": "statement_raw",
             "fix_hint": "Rewrite the statement using 'shall' to express a mandatory requirement.",
         },
         {
@@ -48,7 +48,7 @@ def _builtin_rules():
             "severity": "warning",
             "check": "regex_must_not_match",
             "pattern": r"\b(should|will|must)\b",
-            "field": "description",
+            "field": "statement_raw",
             "fix_hint": "Replace with 'shall'. 'Should' implies optional; 'will' and 'must' are ambiguous.",
         },
         {
@@ -57,7 +57,7 @@ def _builtin_rules():
             "severity": "warning",
             "check": "keyword_forbidden",
             "keywords": ["appropriate", "adequate", "as necessary", "as required", "sufficient", "satisfactory", "flexible", "easy"],
-            "field": "description",
+            "field": "statement_raw",
             "fix_hint": "Replace ambiguous terms with specific, measurable criteria.",
         },
         {
@@ -66,7 +66,7 @@ def _builtin_rules():
             "severity": "error",
             "check": "regex_must_not_match",
             "pattern": r"\bshall\b.*\b(and|or)\b.*\bshall\b",
-            "field": "description",
+            "field": "statement_raw",
             "fix_hint": "Split into separate requirements, one per 'shall' statement.",
         },
         {
@@ -90,7 +90,7 @@ def _builtin_rules():
             "name": "Requirement must be allocated to at least one system",
             "severity": "warning",
             "check": "field_must_be_set",
-            "field": "systemId",
+            "field": "systemIds",
             "fix_hint": "Allocate this requirement to a system via the traceability panel.",
         },
         {
@@ -99,10 +99,38 @@ def _builtin_rules():
             "severity": "info",
             "check": "regex_must_match",
             "pattern": r"\d+|within|less than|greater than|minimum|maximum|at least|at most|between",
-            "field": "description",
+            "field": "statement_raw",
             "fix_hint": "Add specific, measurable criteria (numbers, limits, conditions).",
         },
     ]
+
+
+def _extract_plain_text(raw):
+    """Extract plain text from a statement_raw value (plain string or rich-text JSON array)."""
+    if not raw:
+        return ""
+    raw = str(raw).strip()
+    # If it looks like a JSON rich-text block, extract all leaf text nodes
+    if raw.startswith("[") or raw.startswith("{"):
+        try:
+            nodes = json.loads(raw)
+            texts = []
+
+            def _walk(node):
+                if isinstance(node, dict):
+                    if "text" in node:
+                        texts.append(node["text"])
+                    for child in node.get("children", []):
+                        _walk(child)
+                elif isinstance(node, list):
+                    for item in node:
+                        _walk(item)
+
+            _walk(nodes)
+            return " ".join(texts).strip()
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return raw
 
 
 def check_requirement(req, rules):
@@ -111,25 +139,38 @@ def check_requirement(req, rules):
     req_id = req.get("requirementId") or req.get("id", "?")
     req_name = req.get("name", "")
     for rule in rules:
-        field = rule.get("field", "description")
-        value = str(req.get(field, "") or "").strip()
+        field = rule.get("field", "statement_raw")
+        raw_value = req.get(field)
         check = rule["check"]
         violated = False
 
-        if check == "regex_must_match":
-            if not re.search(rule["pattern"], value, re.IGNORECASE):
-                violated = True
-        elif check == "regex_must_not_match":
-            if re.search(rule["pattern"], value, re.IGNORECASE):
-                violated = True
-        elif check == "keyword_forbidden":
-            for kw in rule.get("keywords", []):
-                if kw.lower() in value.lower():
+        # For list fields (e.g. systemIds), treat non-empty list as "set"
+        if isinstance(raw_value, list):
+            if check == "field_must_be_set":
+                violated = len(raw_value) == 0
+            else:
+                value = " ".join(str(v) for v in raw_value)
+        else:
+            # Extract plain text from rich-text JSON for statement fields
+            if field == "statement_raw":
+                value = _extract_plain_text(raw_value)
+            else:
+                value = str(raw_value or "").strip()
+
+            if check == "regex_must_match":
+                if not re.search(rule["pattern"], value, re.IGNORECASE):
                     violated = True
-                    break
-        elif check == "field_must_be_set":
-            if not value or value in ("None", "null", ""):
-                violated = True
+            elif check == "regex_must_not_match":
+                if re.search(rule["pattern"], value, re.IGNORECASE):
+                    violated = True
+            elif check == "keyword_forbidden":
+                for kw in rule.get("keywords", []):
+                    if kw.lower() in value.lower():
+                        violated = True
+                        break
+            elif check == "field_must_be_set":
+                if not value or value in ("None", "null", ""):
+                    violated = True
 
         if violated:
             violations.append({
